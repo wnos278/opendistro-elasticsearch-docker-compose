@@ -1,0 +1,72 @@
+version: '3'
+services:
+  master:
+    image: amazon/opendistro-for-elasticsearch:latest
+    container_name: master
+    environment:
+      - cluster.name=es-cluster
+      - node.name=master
+      - discovery.seed_hosts=data01,data02
+      - cluster.initial_master_nodes=master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - opendistro_security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - master-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600
+
+  data01:
+    image: amazon/opendistro-for-elasticsearch:latest
+    container_name: data01
+    environment:
+      - cluster.name=es-cluster
+      - node.name=data01
+      - discovery.seed_hosts=master,data02
+      - cluster.initial_master_nodes=master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - opendistro_security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01-data:/usr/share/elasticsearch/data
+    ports:
+      - 9201:9200
+      - 9601:9600
+
+  data02:
+    image: amazon/opendistro-for-elasticsearch:latest
+    container_name: data02
+    environment:
+      - cluster.name=es-cluster
+      - node.name=data02
+      - discovery.seed_hosts=master,data01
+      - cluster.initial_master_nodes=master
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - opendistro_security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data02-data:/usr/share/elasticsearch/data
+    ports:
+      - 9202:9200
+      - 9602:9600
+
+volumes:
+  master-data:
+    driver: local
+  data01-data:
+    driver: local
+  data02-data:
+    driver: local
